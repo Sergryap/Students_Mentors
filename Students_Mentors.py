@@ -11,10 +11,10 @@ class Student:
         Student.students.append(self)
 
     @property
-    def _middle_grade(self):
-        '''
+    def middle_grade(self):
+        """
         метод для определения средней оценки
-        '''
+        """
         count = 0
         total = 0
         for j in self.grades.values():
@@ -27,7 +27,7 @@ class Student:
         return f'''
 Имя: {self.name}
 Фамилия: {self.surname}
-Средняя оценка за домашние задания: {self._middle_grade}
+Средняя оценка за домашние задания: {self.middle_grade}
 Курсы в процессе изучения: {', '.join(self.courses_in_progress)}
 Завершенные курсы: {', '.join(self.finished_courses)}
 '''
@@ -46,14 +46,14 @@ class Student:
         self.finished_courses.append(course_name)
 
     def __eq__(self, other):  # проверка на равенство
-        if isinstance(other, Student):
-            return self._middle_grade == other._middle_grade
+        if type(self) == type(other):
+            return self.middle_grade == other.middle_grade
 
     def __lt__(self, other):  # сравнение на меньше
-        if isinstance(other, Student):
-            return self._middle_grade < other._middle_grade
+        if type(self) == type(other):
+            return self.middle_grade < other.middle_grade
 
-    def __le__(self, other):  # сравнение на меньше или равно
+    def __le__(self, other):  # проверка на меньше или равно
         return self == other or self < other
 
 
@@ -64,7 +64,12 @@ class Mentor:
         self.courses_attached = []
 
 
-class Lecturer(Mentor):
+class Lecturer(Mentor, Student):
+    """
+    Класс лекторов.
+    Для определения методов middle_grade и методов сравнения
+    в качестве второго родителя принят класс Student
+    """
     lecturers = []
 
     def __init__(self, name, surname):
@@ -76,32 +81,10 @@ class Lecturer(Mentor):
         return f'''
 Имя: {self.name}
 Фамилия: {self.surname}
-Средняя оценка за лекции: {self._middle_grade}
+Средняя оценка за лекции: {self.middle_grade}
 '''
-
-    @property
-    def _middle_grade(self):
-        '''
-        метод для определения средней оценки
-        '''
-        count = 0
-        total = 0
-        for j in self.grades.values():
-            for i in j:
-                count += 1
-                total += i
-        return round(total / count, 1)
-
-    def __eq__(self, other):  # проверка на равенство
-        if isinstance(other, Lecturer):
-            return self._middle_grade == other._middle_grade
-
-    def __lt__(self, other):  # сравнение на меньше
-        if isinstance(other, Lecturer):
-            return self._middle_grade < other._middle_grade
-
-    def __le__(self, other):  # сравнение на меньше или равно
-        return self == other or self < other
+    rate_hw = property(doc='(!) Disallowed inherited')
+    add_courses = property(doc='(!) Disallowed inherited')
 
 
 class Reviewer(Mentor):
@@ -123,7 +106,7 @@ class Reviewer(Mentor):
             return 'Ошибка'
 
 
-def middle_grade(course, peoples):
+def total_middle_grade(course, peoples):
     """
     Средняя оценка по всем д.з. студентов или лекторам по заданному курсу
     """
@@ -163,7 +146,7 @@ reviewer2.courses_attached += ['Python', 'Java', 'Git']
 reviewer1.rate_hw(student1, 'Python', 8)
 reviewer1.rate_hw(student1, 'Java', 10)
 reviewer2.rate_hw(student2, 'Python', 6)
-reviewer2.rate_hw(student2, 'Java', 10)
+reviewer2.rate_hw(student2, 'Java', 7)
 reviewer2.rate_hw(student2, 'Git', 10)
 
 student1.rate_hw(lector1, 'Python', 8)
@@ -185,8 +168,10 @@ print(lector2)
 print(reviewer1)
 print(reviewer2)
 
-print(middle_grade('Python', Student.students))
-print(middle_grade('Git', Lecturer.lecturers))
+print(total_middle_grade('Python', Student.students))
+print(total_middle_grade('Java', Student.students))
+print(total_middle_grade('Git', Lecturer.lecturers))
+print(total_middle_grade('Java', Lecturer.lecturers))
 
 print(lector1 < lector2)
 print(student1 == student2)
