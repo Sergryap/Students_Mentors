@@ -16,8 +16,7 @@ class Student:
         метод для определения средней оценки
         """
         gen = (i for j in self.grades.values() for i in j)
-        count = 0
-        total = 0
+        count, total = 0, 0
         for i in gen:
             count += 1
             total += i
@@ -37,13 +36,16 @@ class Student:
 Завершенные курсы: {', '.join(self.finished_courses)}
 '''
 
-    def rate_hw(self, lecturer, course, grade):
-        if isinstance(lecturer,
-                      Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
-            if course in lecturer.grades:
-                lecturer.grades[course] += [grade]
+    def __rate_true(self, people, course):
+        return isinstance(people,
+                          Lecturer) and course in self.courses_in_progress and course in people.courses_attached
+
+    def rate_hw(self, people, course, grade):
+        if self.__rate_true(people, course):
+            if course in people.grades:
+                people.grades[course] += [grade]
             else:
-                lecturer.grades[course] = [grade]
+                people.grades[course] = [grade]
         else:
             return 'Ошибка'
 
@@ -102,12 +104,16 @@ class Reviewer(Mentor):
 Фамилия: {self.surname}
 '''
 
-    def rate_hw(self, student, course, grade):
-        if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
-            if course in student.grades:
-                student.grades[course] += [grade]
+    def __rate_true(self, people, course):
+        return isinstance(people,
+                          Student) and course in self.courses_attached and course in people.courses_in_progress
+
+    def rate_hw(self, people, course, grade):
+        if self.__rate_true(people, course):
+            if course in people.grades:
+                people.grades[course] += [grade]
             else:
-                student.grades[course] = [grade]
+                people.grades[course] = [grade]
         else:
             return 'Ошибка'
 
@@ -116,13 +122,13 @@ def total_middle_grade(course, peoples):
     """
     Средняя оценка по всем д.з. студентов или лекторам по заданному курсу
     """
-    count = 0
-    total = 0
+
     if peoples == Student.students:
         row = 'по всем домашним заданиям cтудентов'
     else:
         row = 'по всем лекторам'
 
+    count, total = 0, 0
     for people in peoples:
         if course in people.grades:
             for grade in people.grades[course]:
