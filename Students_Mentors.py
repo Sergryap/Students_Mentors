@@ -15,13 +15,18 @@ class Student:
         """
         метод для определения средней оценки
         """
+        gen = (i for j in self.grades.values() for i in j)
         count = 0
         total = 0
-        for j in self.grades.values():
-            for i in j:
-                count += 1
-                total += i
+        for i in gen:
+            count += 1
+            total += i
         return round(total / count, 1)
+        # for j in self.grades.values():
+        #     for i in j:
+        #         count += 1
+        #         total += i
+        # return round(total / count, 1)
 
     def __str__(self):
         return f'''
@@ -83,6 +88,7 @@ class Lecturer(Mentor, Student):
 Фамилия: {self.surname}
 Средняя оценка за лекции: {self.middle_grade}
 '''
+
     rate_hw = property(doc='(!) Disallowed inherited')
     add_courses = property(doc='(!) Disallowed inherited')
 
