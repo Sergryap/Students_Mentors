@@ -7,6 +7,8 @@ class MembersTraining:
         self.name = name
         self.surname = surname
         self.gender = gender
+        if type(self) == Student or type(self) == Lecturer:
+            self.grades = {}
 
     @property
     def middle_grade(self):
@@ -44,19 +46,28 @@ class MembersTraining:
         """
         return self == other or self < other
 
+    def __rate_true(self, people, course):
+        """
+        Проверка к методу rate_hw
+        """
+        if type(self) == Student:
+            return isinstance(people,
+                              Lecturer) and course in self.courses_in_progress and course in people.courses_attached
+        elif type(self) == Reviewer:
+            return isinstance(people,
+                              Student) and course in self.courses_attached and course in people.courses_in_progress
+        else:
+            print('Нет прав для проставления оценки')
+
     def rate_hw(self, people, course, grade):
         """
         метод проставления оценок студентам или лекторам
         """
-        if type(self) == Lecturer:
-            print('Не предусмотрена оценка')
-        elif self._rate_true(people, course):
+        if self.__rate_true(people, course):
             if course in people.grades:
                 people.grades[course] += [grade]
             else:
                 people.grades[course] = [grade]
-        else:
-            print('Ошибка')
 
 
 class Student(MembersTraining):
@@ -66,7 +77,6 @@ class Student(MembersTraining):
         super().__init__(name, surname, gender)
         self.finished_courses = []
         self.courses_in_progress = []
-        self.grades = {}
         Student.students.append(self)
 
     def __str__(self):
@@ -77,10 +87,6 @@ class Student(MembersTraining):
 Курсы в процессе изучения: {', '.join(self.courses_in_progress)}
 Завершенные курсы: {', '.join(self.finished_courses)}
 '''
-
-    def _rate_true(self, people, course):
-        return isinstance(people,
-                          Lecturer) and course in self.courses_in_progress and course in people.courses_attached
 
     def add_courses(self, course_name):
         self.finished_courses.append(course_name)
@@ -100,7 +106,6 @@ class Lecturer(Mentor):
 
     def __init__(self, name, surname, gender):
         super().__init__(name, surname, gender)
-        self.grades = {}
         Lecturer.lecturers.append(self)
 
     def __str__(self):
@@ -119,10 +124,6 @@ class Reviewer(Mentor):
         return f'''Имя: {self.name}
 Фамилия: {self.surname}
 '''
-
-    def _rate_true(self, people, course):
-        return isinstance(people,
-                          Student) and course in self.courses_attached and course in people.courses_in_progress
 
 
 def total_middle_grade(course, peoples):
