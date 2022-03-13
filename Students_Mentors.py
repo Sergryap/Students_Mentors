@@ -1,19 +1,17 @@
-class Student:
-    students = []
+class MembersTraining:
+    """
+    Класс общих методов и свойств
+    """
 
     def __init__(self, name, surname, gender):
         self.name = name
         self.surname = surname
         self.gender = gender
-        self.finished_courses = []
-        self.courses_in_progress = []
-        self.grades = {}
-        Student.students.append(self)
 
     @property
     def middle_grade(self):
         """
-        метод для определения средней оценки
+        метод (свойство) для определения средней оценки
         """
         gen = (i for j in self.grades.values() for i in j)
         count, total = 0, 0
@@ -21,11 +19,55 @@ class Student:
             count += 1
             total += i
         return round(total / count, 1)
-        # for j in self.grades.values():
-        #     for i in j:
-        #         count += 1
-        #         total += i
-        # return round(total / count, 1)
+
+    def __eq__(self, other):
+        """
+        проверка на равенство
+        """
+        if type(self) == Reviewer:
+            return 'Не поддерживается сравнение'
+        elif type(self) == type(other):
+            return self.middle_grade == other.middle_grade
+
+    def __lt__(self, other):
+        """
+        проверка на меньше
+        """
+        if type(self) == Reviewer:
+            return 'Не поддерживается сравнение'
+        elif type(self) == type(other):
+            return self.middle_grade < other.middle_grade
+
+    def __le__(self, other):
+        """
+        проверка на меньше или равно
+        """
+        return self == other or self < other
+
+    def rate_hw(self, people, course, grade):
+        """
+        метод проставления оценок студентам или лекторам
+        """
+        if type(self) == Lecturer:
+            print('Не предусмотрена оценка')
+        elif self._rate_true(people, course):
+            if course in people.grades:
+                people.grades[course] += [grade]
+            else:
+                people.grades[course] = [grade]
+        else:
+            print('Ошибка')
+
+
+class Student(MembersTraining):
+    students = []
+
+    def __init__(self, name, surname, gender):
+        super().__init__(name, surname, gender)
+        self.finished_courses = []
+        self.courses_in_progress = []
+        self.grades = {}
+        Student.students.append(self)
 
     def __str__(self):
         return f'''
@@ -36,51 +78,28 @@ class Student:
 Завершенные курсы: {', '.join(self.finished_courses)}
 '''
 
-    def __rate_true(self, people, course):
+    def _rate_true(self, people, course):
         return isinstance(people,
                           Lecturer) and course in self.courses_in_progress and course in people.courses_attached
-
-    def rate_hw(self, people, course, grade):
-        if self.__rate_true(people, course):
-            if course in people.grades:
-                people.grades[course] += [grade]
-            else:
-                people.grades[course] = [grade]
-        else:
-            return 'Ошибка'
 
     def add_courses(self, course_name):
         self.finished_courses.append(course_name)
 
-    def __eq__(self, other):  # проверка на равенство
-        if type(self) == type(other):
-            return self.middle_grade == other.middle_grade
 
-    def __lt__(self, other):  # сравнение на меньше
-        if type(self) == type(other):
-            return self.middle_grade < other.middle_grade
-
-    def __le__(self, other):  # проверка на меньше или равно
-        return self == other or self < other
-
-
-class Mentor:
-    def __init__(self, name, surname):
-        self.name = name
-        self.surname = surname
+class Mentor(MembersTraining):
+    def __init__(self, name, surname, gender):
+        super().__init__(name, surname, gender)
         self.courses_attached = []
 
 
-class Lecturer(Mentor, Student):
+class Lecturer(Mentor):
     """
-    Класс лекторов.
-    Для определения методов middle_grade и методов сравнения
-    в качестве второго родителя принят класс Student
+    Класс лекторов
     """
     lecturers = []
 
-    def __init__(self, name, surname):
-        super().__init__(name, surname)
+    def __init__(self, name, surname, gender):
+        super().__init__(name, surname, gender)
         self.grades = {}
         Lecturer.lecturers.append(self)
 
@@ -91,38 +110,25 @@ class Lecturer(Mentor, Student):
 Средняя оценка за лекции: {self.middle_grade}
 '''
 
-    rate_hw = property(doc='(!) Disallowed inherited')
-    add_courses = property(doc='(!) Disallowed inherited')
-
 
 class Reviewer(Mentor):
-    def __init__(self, name, surname):
-        super().__init__(name, surname)
+    def __init__(self, name, surname, gender):
+        super().__init__(name, surname, gender)
 
     def __str__(self):
         return f'''Имя: {self.name}
 Фамилия: {self.surname}
 '''
 
-    def __rate_true(self, people, course):
+    def _rate_true(self, people, course):
         return isinstance(people,
                           Student) and course in self.courses_attached and course in people.courses_in_progress
-
-    def rate_hw(self, people, course, grade):
-        if self.__rate_true(people, course):
-            if course in people.grades:
-                people.grades[course] += [grade]
-            else:
-                people.grades[course] = [grade]
-        else:
-            return 'Ошибка'
 
 
 def total_middle_grade(course, peoples):
     """
     Средняя оценка по всем д.з. студентов или лекторам по заданному курсу
     """
-
     if peoples == Student.students:
         row = 'по всем домашним заданиям cтудентов'
     else:
@@ -141,10 +147,10 @@ def total_middle_grade(course, peoples):
 
 student1 = Student('Сергей', 'Агапов', 'муж')
 student2 = Student('Светлана', 'Соколова', 'жен')
-lector1 = Lecturer('Ирина', 'Сергеевна')
-lector2 = Lecturer('Александр', 'Владимирович')
-reviewer1 = Reviewer('Сергей', 'Николаевич')
-reviewer2 = Reviewer('Антонина', 'Васильевна')
+lector1 = Lecturer('Ирина', 'Сергеевна', 'жен')
+lector2 = Lecturer('Александр', 'Владимирович', 'муж')
+reviewer1 = Reviewer('Сергей', 'Николаевич', 'муж')
+reviewer2 = Reviewer('Антонина', 'Васильевна', 'жен')
 
 student1.courses_in_progress += ['Python', 'Java']
 student1.finished_courses += ['Введение в программирование']
@@ -187,3 +193,5 @@ print(total_middle_grade('Java', Lecturer.lecturers))
 
 print(lector1 < lector2)
 print(student1 == student2)
+print(reviewer1 == reviewer2)
+lector1.rate_hw(student2, 'Git', 10)
