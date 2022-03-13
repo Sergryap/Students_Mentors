@@ -9,6 +9,10 @@ class MembersTraining:
         self.gender = gender
         if type(self) == Student or type(self) == Lecturer:
             self.grades = {}
+        if type(self) == Student:
+            self.courses_in_progress = []
+        if isinstance(self, Mentor):
+            self.courses_attached = []
 
     @property
     def middle_grade(self):
@@ -76,7 +80,6 @@ class Student(MembersTraining):
     def __init__(self, name, surname, gender):
         super().__init__(name, surname, gender)
         self.finished_courses = []
-        self.courses_in_progress = []
         Student.students.append(self)
 
     def __str__(self):
@@ -95,7 +98,6 @@ class Student(MembersTraining):
 class Mentor(MembersTraining):
     def __init__(self, name, surname, gender):
         super().__init__(name, surname, gender)
-        self.courses_attached = []
 
 
 class Lecturer(Mentor):
